@@ -99,14 +99,14 @@ objects:
     test: false
     triggers:
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-        - "${NAME}"
-        from:
-          kind: ImageStreamTag
-          name: "${NAME}:latest"
-      type: ImageChange
+    # - imageChangeParams:
+    #     automatic: true
+    #     containerNames:
+    #     - "${NAME}"
+    #     from:
+    #       kind: ImageStreamTag
+    #       name: "${NAME}:latest"
+    #   type: ImageChange
 - apiVersion: v1
   kind: Service
   metadata:

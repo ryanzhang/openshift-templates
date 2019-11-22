@@ -40,6 +40,7 @@ objects:
     resources:
       requests:
         storage: "${VOLUME_CAPACITY}"
+    storageClassName: "${NAME}"
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -58,7 +59,7 @@ objects:
           name: "${NAME}"
       spec:
         containers:
-        - image: "${NAME}"
+        - image: "${REGISTRY_URL}/${CONTAINER_IMAGE}"
           imagePullPolicy: Always
           name: "${NAME}"
           readinessProbe:
@@ -159,5 +160,9 @@ parameters:
   displayName: Nexus Container Image
   name: CONTAINER_IMAGE
   value: sonatype/nexus3:3.7.1
+- description: Registry server for pulling image
+  displayName: Registry Server for pulling image
+  name: REGISTRY_URL
+  value: docker.io 
 labels:
   template: nexus-persistent-template

@@ -16,22 +16,22 @@ objects:
     name: "${NAME}"
     annotations:
       description: Keeps track of changes in the application image
-# - kind: ImageStream
-#   apiVersion: image.openshift.io/v1
-#   metadata:
-#     name: ${BUILDER_IMAGE_STREAM_NAME}
-#     annotations:
-#       description: Tracks the Red Hat Jenkins base image, since openshift may not ship with the tag we need. Importing the image allows normal users to run the playbook.
-#   spec:
-#     tags:
-#     - annotations: null
-#       from:
-#         kind: DockerImage
-#         name: ${BUILDER_REGISTRY_URL}/${BUILDER_REPOSITORY_NAME}/${BUILDER_IMAGE}:${BUILDER_IMAGE_STREAM_TAG_NAME}
-#       importPolicy: {}
-#       name: ${BUILDER_IMAGE_STREAM_TAG_NAME}
-#       referencePolicy:
-#         type: Source
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    name: ${BUILDER_IMAGE_STREAM_NAME}
+    annotations:
+      description: Tracks the Red Hat Jenkins base image, since openshift may not ship with the tag we need. Importing the image allows normal users to run the playbook.
+  spec:
+    tags:
+    - annotations: null
+      from:
+        kind: DockerImage
+        name: ${BUILDER_REGISTRY_URL}/${BUILDER_REPOSITORY_NAME}/${BUILDER_IMAGE}:${BUILDER_IMAGE_STREAM_TAG_NAME}
+      importPolicy: {}
+      name: ${BUILDER_IMAGE_STREAM_TAG_NAME}
+      referencePolicy:
+        type: Source
 - kind: BuildConfig
   apiVersion: build.openshift.io/v1
   metadata:
@@ -55,12 +55,6 @@ objects:
         secret: "${BUILD_SECRET}"
         allowEnv: true
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        from:
-          kind: ImageStreamTag
-          name: ${BUILDER_IMAGE_STREAM_NAME}:${BUILDER_IMAGE_STREAM_TAG_NAME}
-      type: ImageChange
     runPolicy: Serial
     source:
       type: Git
@@ -69,12 +63,16 @@ objects:
         ref: "${SOURCE_REPOSITORY_REF}"
       contextDir: "${SOURCE_REPOSITORY_CONTEXT_DIR}"
     strategy:
-      type: Source
-      sourceStrategy:
+      dockerStrategy:
+        buildArgs:
+          - name: ca_cert
+            value: "${CA_CERT}"
+        dockerfilePath: "${DOCKERFILE_PATH}"
         from:
           kind: ImageStreamTag
           name: "${BUILDER_IMAGE_STREAM_NAME}:${BUILDER_IMAGE_STREAM_TAG_NAME}"
-          namespace: "${IMAGE_STREAM_NAMESPACE}"
+          imagePullPolicy: Always
+      type: Docker
     output:
       to:
         kind: ImageStreamTag
@@ -131,4 +129,11 @@ parameters:
   description: The namespace where the Jenkins builder Image Stream lives
   required: true
   value: openshift
-
+- name: DOCKERFILE_PATH
+  displayName: Path to Dockerfile
+  description: Path for alternate Dockerfile to use for build
+  value: Dockerfile  
+- name: CA_CERT
+  displayName: SSL Fullchain Certificate in base64 format
+  description: SSL Fullchain Certificate in base64 format
+  value: ""

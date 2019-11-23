@@ -50,6 +50,7 @@ objects:
       resources:
         requests:
           storage: ${VOLUME_CAPACITY}
+      storageClassName: ${JENKINS_SERVICE_NAME}
   - apiVersion: v1
     kind: DeploymentConfig
     metadata:
